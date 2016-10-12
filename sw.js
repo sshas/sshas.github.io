@@ -5,7 +5,7 @@
  * Created by steve on 28/09/2016.
  */
 
-const serverUrl = 'http://192.168.1.109:7890';
+const serverUrl = 'https://192.168.1.109:7890';
 
 
 function fetchAndCache(event, caches, CACHE_NAME) {

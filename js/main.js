@@ -67,7 +67,7 @@ class Room {
 /**
  * Created by steve on 23/09/2016.
  */
-const baseUrl = 'http://192.168.1.109:7890';
+const baseUrl = 'https://192.168.1.109:7890';
 
 class DeviceManager {
 
