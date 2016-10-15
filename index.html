@@ -5,35 +5,118 @@
   <title>Lightwave RF</title>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#ff0000">
+  <meta name="mobile-web-app-capable" content="yes">
   <link rel="icon" sizes="192x192" href="/images/launcher-icon-192.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://code.getmdl.io/1.2.1/material.red-blue.min.css" />
+  <style>
+    .mdl-card {
+      width: 100%;
+    }
+    #loading-msg {
+      width: 100%;
+      text-align: center;
+    }
+  </style>
   <!-- inject:css -->
   <!-- endinject -->
 </head>
 <body>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <span class="mdl-layout-title">Lightwave</span>
+      <!-- Add spacer, to align navigation to the right -->
+      <div class="mdl-layout-spacer"></div>
+      <!-- Navigation. We hide it in small screens. -->
+      <nav class="mdl-navigation mdl-layout">
+        <a class="mdl-navigation__link" href="#rooms">Rooms</a>
+      </nav>
+    </div>
+  </header>
+  <div class="mdl-layout__drawer">
+    <span class="mdl-layout-title">Title</span>
+    <nav class="mdl-navigation">
+      <a class="mdl-navigation__link" href="#rooms">Rooms</a>
+    </nav>
+  </div>
+  <main class="mdl-layout__content">
+    <div class="page-content">
+      <p id="loading-msg">
+        If you are seeing this message, your browser doesn't support this site or failed to load devices.
+        Try visiting <a href="https://ha.skysteve.com:7890/devices">https://ha.skysteve.com:7890/devices</a>
+      </p>
+      <ul class="mdl-list" id="roomList" style="display: none;">
 
-  <pre id="temp"></pre>
+      </ul>
+    </div>
+  </main>
+</div>
 
-  <!-- inject:js -->
-  <script src="/js/main.js"></script>
-  <!-- endinject -->
-  <script>
-    if (!navigator.serviceWorker.controller) {
-      console.log("This page is not controlled by a ServiceWorker (yet)");
-    } else {
-      console.log("This page is controlled by a ServiceWorker");
-    }
+<div aria-live="assertive" aria-atomic="true" aria-relevant="text" class="mdl-snackbar mdl-js-snackbar">
+  <div class="mdl-snackbar__text"></div>
+  <button type="button" class="mdl-snackbar__action"></button>
+</div>
 
-    // Let's register our serviceworker
-    navigator.serviceWorker.register('sw.js', {
-      // The scope cannot be parent to the script url
-      scope: './'
-    })
-      .then((registration) => console.log('ServiceWorker registration successful with scope: ', registration.scope))
-      .catch((err) => console.log('ServiceWorker registration failed: ', err));
-  </script>
- <!-- <fancy-button></fancy-button>
-  <button is="fancy-button" disabled>Fancy button!</button>-->
-  <img is="bigger-img">
-  <img width="400" src="https://s2.graphiq.com/sites/default/files/stories/t2/tiny_cat_12573_8950.jpg">
+<!-- templates -->
+<template id="template_device">
+  <span class="mdl-list__item-primary-content">
+    <i class="material-icons">lightbulb_outline</i>
+    <var class="device-name"></var>
+  </span>
+  <span class="mdl-list__item-secondary-action">
+    <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored device-on">
+       <i class="material-icons">visibility</i>
+    </button>
+    <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored device-off">
+       <i class="material-icons">visibility_off</i>
+    </button>
+  </span>
+</template>
+
+<template id="template_listItem">
+  <li class="mdl-list__item">
+      <span class="mdl-list__item-primary-content"></span>
+  </li>
+</template>
+
+<template id="template_room_card">
+  <div class="mdl-card mdl-shadow--2dp">
+    <div class="mdl-card__title mdl-card--expand">
+      <h2 class="mdl-card__title-text">Update</h2>
+    </div>
+    <div class="mdl-card__supporting-text">
+      <ul class='mdl-list deviceList'>
+      </ul>
+    </div>
+<!--    <div class="mdl-card__actions mdl-card--border">
+      <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+        Action
+      </a>
+    </div> -->
+  </div>
+</template>
+
+
+<!-- inject:js -->
+<script src="/js/main.js"></script>
+<!-- endinject -->
+<script>
+  if (!navigator.serviceWorker.controller) {
+    console.log("This page is not controlled by a ServiceWorker (yet)");
+  } else {
+    console.log("This page is controlled by a ServiceWorker");
+  }
+
+  // Let's register our serviceworker
+  navigator.serviceWorker.register('sw.js', {
+    // The scope cannot be parent to the script url
+    scope: './'
+  })
+    .then((registration) => console.log('ServiceWorker registration successful with scope: ', registration.scope))
+    .catch((err) => console.log('ServiceWorker registration failed: ', err));
+</script>
 </body>
 </html>
