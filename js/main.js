@@ -120,7 +120,12 @@ class DeviceManager {
   }
 
   fetch() {
+    const headers = new Headers();
+
+    headers.append('x-api-key', 'Bek1RrO1MZ2EoC6HN8OGb8bEJ7YRFZLS9MhPz8ku');
+
     const options = {
+      headers,
       mode: 'cors'
     };
 
@@ -128,7 +133,7 @@ class DeviceManager {
       return Promise.resolve(this.rooms);
     }
 
-    return window.fetch('https://4p2rhkkdkb.execute-api.us-east-1.amazonaws.com/lw/devices', options)
+    return window.fetch('https://8r3niqkqtf.execute-api.us-east-1.amazonaws.com/lw/devices', options)
       .then(res => res.json())
       .then((jsonRooms) => {
         this.rooms = jsonRooms.map(room => new Room(room));
