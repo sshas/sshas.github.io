@@ -102,7 +102,7 @@ class Room {
 /**
  * Created by steve on 23/09/2016.
  */
-const baseUrl = 'https://ha.skysteve.com:7890';
+const baseUrl = 'http://ha.skysteve.com:7890';
 
 class DeviceManager {
 
@@ -128,7 +128,7 @@ class DeviceManager {
       return Promise.resolve(this.rooms);
     }
 
-    return window.fetch(`${baseUrl}/devices`, options)
+    return window.fetch('https://4p2rhkkdkb.execute-api.us-east-1.amazonaws.com/lw/devices', options)
       .then(res => res.json())
       .then((jsonRooms) => {
         this.rooms = jsonRooms.map(room => new Room(room));
