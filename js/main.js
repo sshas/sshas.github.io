@@ -102,7 +102,9 @@ class Room {
 /**
  * Created by steve on 23/09/2016.
  */
+const awsDeviceUrl = 'https://8r3niqkqtf.execute-api.us-east-1.amazonaws.com/lw/devices';
 const baseUrl = 'http://ha.skysteve.com:7890';
+const cacheKey = 'roomsCache';
 
 class DeviceManager {
 
@@ -133,9 +135,26 @@ class DeviceManager {
       return Promise.resolve(this.rooms);
     }
 
-    return window.fetch('https://8r3niqkqtf.execute-api.us-east-1.amazonaws.com/lw/devices', options)
+    this.rooms = localStorage.getItem(cacheKey);
+
+    if (this.rooms) {
+      this.rooms = JSON.parse(this.rooms).map(room => new Room(room));
+      return Promise.resolve(this.rooms);
+    }
+
+    return window.fetch(awsDeviceUrl, options)
       .then(res => res.json())
       .then((jsonRooms) => {
+        return jsonRooms.sort((a, b) => {
+          if (a.id > b.id) {
+            return 1;
+          }
+
+          return a.id < b.id ? -1 : 0;
+        });
+      })
+      .then((jsonRooms) => {
+        localStorage.setItem(cacheKey, JSON.stringify(jsonRooms));
         this.rooms = jsonRooms.map(room => new Room(room));
         return this.rooms;
       });
