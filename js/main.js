@@ -25,11 +25,11 @@ class Device {
   }
 
   deviceOn() {
-    DeviceManager.execCommand('deviceOn', this.roomId, this.id);
+    return DeviceManager.execCommand('deviceOn', this.roomId, this.id);
   }
 
   deviceOff() {
-    DeviceManager.execCommand('deviceOff', this.roomId, this.id);
+    return DeviceManager.execCommand('deviceOff', this.roomId, this.id);
   }
 
   get id() {
@@ -102,9 +102,17 @@ class Room {
 /**
  * Created by steve on 23/09/2016.
  */
-const awsDeviceUrl = 'https://8r3niqkqtf.execute-api.us-east-1.amazonaws.com/lw/devices';
-const baseUrl = 'http://ha.skysteve.com:7890';
+const baseUrl = 'https://8r3niqkqtf.execute-api.us-east-1.amazonaws.com/lw';
 const cacheKey = 'roomsCache';
+
+const headers = new Headers();
+
+headers.append('x-api-key', 'Bek1RrO1MZ2EoC6HN8OGb8bEJ7YRFZLS9MhPz8ku');
+
+const fetchOptions = {
+  headers,
+  mode: 'cors'
+};
 
 class DeviceManager {
 
@@ -122,15 +130,6 @@ class DeviceManager {
   }
 
   fetch() {
-    const headers = new Headers();
-
-    headers.append('x-api-key', 'Bek1RrO1MZ2EoC6HN8OGb8bEJ7YRFZLS9MhPz8ku');
-
-    const options = {
-      headers,
-      mode: 'cors'
-    };
-
     if (this.rooms) {
       return Promise.resolve(this.rooms);
     }
@@ -142,7 +141,7 @@ class DeviceManager {
       return Promise.resolve(this.rooms);
     }
 
-    return window.fetch(awsDeviceUrl, options)
+    return window.fetch(`${baseUrl}/devices`, fetchOptions)
       .then(res => res.json())
       .then((jsonRooms) => {
         return jsonRooms.sort((a, b) => {
@@ -161,11 +160,14 @@ class DeviceManager {
   }
 
   static execCommand(command, room, device, dimLevel) {
-    navigator.sendBeacon(`${baseUrl}/command`, JSON.stringify({
-      command: command,
-      room: room,
-      device: device,
-      dimLevel: dimLevel
+    return window.fetch(`${baseUrl}/exec`, Object.assign(fetchOptions, {
+      method: 'post',
+      body: JSON.stringify({
+        command: command,
+        room: room,
+        device: device,
+        dimLevel: dimLevel
+      })
     }));
   }
 }
@@ -188,13 +190,15 @@ class Device$1 {
   onRender(el) {
     // setup on click events
     el.querySelector('.device-on').addEventListener('click', () => {
-      this.model.deviceOn();
-      this.showToast();
+      this.model.deviceOn()
+        .then(() => this.showToast())
+        .catch(err => this.showToast(err));
     });
 
     el.querySelector('.device-off').addEventListener('click', () => {
-      this.model.deviceOff();
-      this.showToast();
+      this.model.deviceOff()
+        .then(() => this.showToast())
+        .catch(err => this.showToast(err));
     });
   }
 
@@ -206,10 +210,10 @@ class Device$1 {
     return document.importNode(template_card.content, true);
   }
 
-  showToast() {
+  showToast(err) {
     const notification = document.querySelector('.mdl-js-snackbar');
     notification.MaterialSnackbar.showSnackbar({
-      message: 'Command sent'
+      message: err ? err.message : 'Command sent'
     });
   }
 }
@@ -302,6 +306,28 @@ deviceManager.fetch()
     elRooms.removeAttribute('style');
   })
   .catch(ex => console.error(ex, ex.stack));
+
+
+// TODO load settings file
+/*
+ <input type='file' onchange='openFile(event)'>
+ <script>
+ var openFile = function(event) {
+ var input = event.target;
+
+ var reader = new FileReader();
+ reader.onload = function(){
+ var arrayBuffer = reader.result;
+ var arr = new Uint8Array(arrayBuffer);
+ var str = String.fromCharCode.apply(String, arr);
+ var json = JSON.parse(str);
+ console.log(JSON.stringify(json.aws));
+ };
+ reader.readAsArrayBuffer(input.files[0]);
+ };
+ </script>
+
+ */
 
 }());
 //# sourceMappingURL=main.js.map
