@@ -105,14 +105,18 @@ class Room {
 const baseUrl = 'https://8r3niqkqtf.execute-api.us-east-1.amazonaws.com/lw';
 const cacheKey = 'roomsCache';
 
-const headers = new Headers();
 
-headers.append('x-api-key', 'Bek1RrO1MZ2EoC6HN8OGb8bEJ7YRFZLS9MhPz8ku');
+function getFetchOptions() {
+  const headers = new Headers();
 
-const fetchOptions = {
-  headers,
-  mode: 'cors'
-};
+// TODO validate we have an access key and bounce to settings if not
+  headers.append('x-api-key', localStorage.getItem('accessKey'));
+
+  return {
+    headers,
+    mode: 'cors'
+  };
+}
 
 class DeviceManager {
 
@@ -141,7 +145,7 @@ class DeviceManager {
       return Promise.resolve(this.rooms);
     }
 
-    return window.fetch(`${baseUrl}/devices`, fetchOptions)
+    return window.fetch(`${baseUrl}/devices`, getFetchOptions())
       .then(res => res.json())
       .then((jsonRooms) => {
         return jsonRooms.sort((a, b) => {
@@ -160,7 +164,7 @@ class DeviceManager {
   }
 
   static execCommand(command, room, device, dimLevel) {
-    return window.fetch(`${baseUrl}/exec`, Object.assign(fetchOptions, {
+    return window.fetch(`${baseUrl}/exec`, Object.assign(getFetchOptions(), {
       method: 'post',
       body: JSON.stringify({
         command: command,
@@ -272,8 +276,7 @@ class RoomList {
     this.rooms = rooms;
   }
 
-  render() {
-    const elListRoot = document.querySelector('#roomList');
+  render(elListRoot) {
     const template_listItem = document.querySelector('#template_listItem');
 
     this.rooms.forEach((room) => {
@@ -291,20 +294,120 @@ class RoomList {
 }
 
 /**
+ * Created by steve on 21/10/2016.
+ */
+class Page {
+
+  onRender(rooms) {
+    // TODO this is a bit backwards but was quick for now
+    const elRoomList = document.querySelector('#roomList');
+    const viewRooms = new RoomList(rooms);
+    viewRooms.render(elRoomList);
+  }
+
+  render() {
+    const template = document.querySelector('#template_page_rooms');
+    return document.importNode(template.content, true);
+  }
+}
+
+/**
+ * Created by steve on 21/10/2016.
+ */
+class Page$1 {
+
+  openFile(event) {
+    const input = event.target;
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const arrayBuffer = new Uint8Array(reader.result);
+      const content = String.fromCharCode.apply(String, arrayBuffer); // eslint-disable-line prefer-spread
+      const json = JSON.parse(content);
+
+      if (json.accessKey) {
+        localStorage.setItem('accessKey', json.accessKey);
+      }
+    };
+
+    reader.readAsArrayBuffer(input.files[0]);
+  }
+
+  onRender() {
+    document.querySelector('#fileLoader').addEventListener('change', this.openFile.bind(this));
+  }
+
+  render() {
+    const template = document.querySelector('#template_page_settings');
+    return document.importNode(template.content, true);
+  }
+}
+
+/**
+ * Created by steve on 21/10/2016.
+ */
+
+class Handlers {
+  constructor(rooms) {
+    this.rooms = rooms;
+    this.elContent = document.querySelector('.page-content');
+  }
+
+  handleUrl() {
+    const hash = location.hash.substring(1);
+
+    try {
+      this[`route_${hash}`]();
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
+
+  renderContent(content) {
+    this.elContent.innerHTML = '';
+    this.elContent.appendChild(content);
+  }
+
+  route_rooms() {
+    const viewRooms = new Page();
+
+    this.renderContent(viewRooms.render());
+    viewRooms.onRender(this.rooms);
+  }
+
+  route_settings() {
+    const viewSettings = new Page$1();
+
+    this.renderContent(viewSettings.render());
+    viewSettings.onRender();
+  }
+}
+
+function initRouter(rooms) {
+  const handlers = new Handlers(rooms);
+  window.addEventListener('hashchange', handlers.handleUrl.bind(handlers), false);
+
+  // if we have no access key, load the settings page
+  if (!localStorage.getItem('accessKey')) {
+    location.hash = 'settings';
+    return;
+  }
+
+  // if we already have a hash, load that page, otherwise load rooms list
+  if (location.hash) {
+    handlers.handleUrl();
+  } else {
+    location.hash = 'rooms';
+  }
+}
+
+/**
  * Created by steve on 22/09/2016.
  */
 const deviceManager = new DeviceManager();
 
 deviceManager.fetch()
-  .then(rooms => new RoomList(rooms))
-  .then(viewRooms => viewRooms.render())
-  .then(() => {
-    const elLoading = document.querySelector('#loading-msg');
-    elLoading.style.display = 'none';
-
-    const elRooms = document.querySelector('#roomList');
-    elRooms.removeAttribute('style');
-  })
+  .then(rooms => initRouter(rooms))
   .catch(ex => console.error(ex, ex.stack));
 
 

@@ -33,6 +33,7 @@
       <!-- Navigation. We hide it in small screens. -->
       <nav class="mdl-navigation mdl-layout">
         <a class="mdl-navigation__link" href="#rooms">Rooms</a>
+        <a class="mdl-navigation__link" href="#settings">Settings</a>
       </nav>
     </div>
   </header>
@@ -48,9 +49,6 @@
         If you are seeing this message, your browser doesn't support this site or failed to load devices.
         Try visiting <a href="https://ha.skysteve.com:7890/devices">https://ha.skysteve.com:7890/devices</a>
       </p>
-      <ul class="mdl-list" id="roomList" style="display: none;">
-
-      </ul>
     </div>
   </main>
 </div>
@@ -61,6 +59,20 @@
 </div>
 
 <!-- templates -->
+<template id="template_page_rooms">
+  <ul class="mdl-list" id="roomList">
+
+  </ul>
+</template>
+
+<template id="template_page_settings">
+  <div class="mdl-textfield mdl-js-textfield">
+    <label class="mdl-textfield__label" for="fileLoader">Choose settings file</label>
+    <br>
+    <input class="mdl-textfield__input" type="file" id="fileLoader">
+  </div>
+</template>
+
 <template id="template_device">
   <span class="mdl-list__item-primary-content">
     <i class="material-icons">lightbulb_outline</i>
